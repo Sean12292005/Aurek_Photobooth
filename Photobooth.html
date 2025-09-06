@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photobooth</title>
+ <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Optional Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* Reset body for full-screen */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #e5e5e5;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    .card {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+
+    .screen {
+      width: 100vw;
+      height: 100vh;
+      background: #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+      box-sizing: border-box;
+      padding: 16px;
+    }
+
+    .start-screen h1 {
+      font-family: Arial, sans-serif;
+      font-size: 60px;
+      margin-bottom: 80px;
+      text-align: center;
+    }
+    .start-screen .brand { color: #0056d2; font-weight: 500; }
+    .start-screen .brand-bold { color: #0056d2; font-weight: 700; }
+    .start-btn {
+      font-size: 22px;
+      padding: 16px 50px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.15);
+      border-radius: 40px;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .start-btn:hover { background: #fff; color: #0056d2; }
+
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    .hidden { display: none; }
+
+    video, img, canvas {
+      border-radius: 12px;
+      border: 2px solid #ccc;
+      margin: 10px 5px;
+      max-width: 100%;
+    }
+
+    input {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 70%;
+    }
+
+    #photo-selection img {
+      width: 100px;
+      height: 75px;
+      object-fit: cover;
+      margin: 5px;
+      cursor: pointer;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .back-btn { background: #6c757d; }
+    .back-btn:hover { background: #495057; }
+
+    #strip-screen { position: relative; }
+    #strip-screen h2 { color: #0056d2; margin-bottom: 16px; }
+
+    .strip-styles {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .strip-choice img {
+      width: 250px;
+      height: 350px;
+      object-fit: contain;
+      background: none;
+      border: 3px solid #ccc;
+      border-radius: 10px;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .strip-choice:hover { transform: scale(1.05); }
+    .strip-choice:hover img { border-color: #007bff; box-shadow: 0 0 12px rgba(0, 123, 255, 0.6); }
+    #strip-screen .strip-choice p { margin-top: 8px; font-weight: 600; color: #0056d2; }
+
+    .color-options {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 15px;
+    }
+    .color-circle { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; transition: transform 0.2s ease; }
+    .color-circle:hover { transform: scale(1.1); }
+    .color-circle.black { background: black; }
+    .color-circle.blue { background: blue; }
+    .color-circle.white { background: white; border: 2px solid #999; }
+
+    #strip-screen .next-btn {
+      font-size: 22px;
+      padding: 16px 50px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.15);
+      border-radius: 40px;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+      position: absolute;
+      bottom: 30px;
+      right: 40px;
+    }
+    #strip-screen .next-btn:hover { background: #fff; color: #0056d2; }
+
+    #filter-screen { position: relative; }
+    #filter-screen h2 { color: #0056d2; margin-bottom: 20px; text-align: center; }
+    #filter-screen .filter-options {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;
+    }
+    #filter-screen .filter-btn {
+      font-size: 18px; padding: 14px 30px; border: 2px solid #000; background: rgba(255,255,255,0.15);
+      border-radius: 40px; color: black; cursor: pointer; transition: 0.3s;
+    }
+    #filter-screen .filter-btn:hover { background: #000; color: #fff; }
+    #filter-screen .back-btn {
+      font-size: 18px; padding: 14px 30px; border: 2px solid #fff; background: rgba(255,255,255,0.15);
+      border-radius: 40px; color: #fff; cursor: pointer; transition: 0.3s; position: absolute; bottom: 30px; left: 40px;
+    }
+    #filter-screen .back-btn:hover { background: #fff; color: #0056d2; }
+
+    #flash {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 9999;
+    }
+
+    #final-photo {
+      max-width: 90vw;
+      max-height: 60vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      background: #fff;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <div id="start-screen" class="screen start-screen">
+      <div class="content">
+        <h1>
+          <span class="brand">aurek</span> 
+          <span class="brand-bold">studio.</span>
+        </h1>
+        <button class="start-btn" onclick="goToStrip()">START</button>
+      </div>
+    </div>
+
+    <div id="strip-screen" class="screen hidden">
+      <h2>STRIP STYLE</h2>
+      <div class="strip-styles">
+        <div class="strip-choice" onclick="chooseStyle('double')">
+          <img id="strip-double" src="DoubleStrip_Black.jpg" alt="Double Strip">
+          <p>Double strip</p>
+        </div>
+        <div class="strip-choice" onclick="chooseStyle('single')">
+          <img id="strip-single" src="SingleStrip_Black.jpg" alt="Single Strip">
+          <p>Single strip</p>
+        </div>
+      </div>
+
+      <h2>STRIP FRAME COLOR</h2>
+      <div class="color-options">
+        <div class="color-circle black" onclick="chooseColor('black')"></div>
+        <div class="color-circle blue" onclick="chooseColor('blue')"></div>
+        <div class="color-circle white" onclick="chooseColor('white')"></div>
+      </div>
+
+    </div>
+
+    <div id="filter-screen" class="screen hidden">
+      <h2>CHOOSE A FILTER</h2>
+      <div class="filter-options">
+        <button class="filter-btn" onclick="setFilter('none')">Normal</button>
+        <button class="filter-btn" onclick="setFilter('grayscale(100%)')">B&amp;W</button>
+        <button class="filter-btn" onclick="setFilter('sepia(100%)')">Sepia</button>
+        <button class="filter-btn" onclick="setFilter('contrast(150%) saturate(120%)')">Vibrant</button>
+        <button class="filter-btn" onclick="setFilter('hue-rotate(180deg)')">Cool Tone</button>
+      </div>
+      <video id="video" width="400" height="300" autoplay></video>
+      <br>
+      <button onclick="startCountdown()" class="filter-btn">Start Photoshoot</button>
+    </div>
+
+    <div id="countdown-screen" class="screen hidden">
+      <h2>Get Ready!</h2>
+      <h1 id="countdown">5</h1>
+      <video id="video-preview" width="400" height="300" autoplay></video>
+    </div>
+
+    <div id="selection-screen" class="screen hidden">
+      <h2>Select Photos</h2>
+      <p>Choose your photos</p>
+      <div id="photo-selection" style="display:flex;flex-wrap:wrap;justify-content:center;"></div>
+    </div>
+
+    <div id="share-screen" class="screen hidden">
+      <h2>Your Photo Strip</h2>
+      <div>
+        <img id="final-photo" src="" alt="Final strip preview">
+      </div>
+      <button onclick="downloadPhoto()"><b>SAVE IMAGE</b></button>
+      <hr style="margin:12px 0;">
+      <button class="back-btn" onclick="reset()">Back to Start</button>
+    </div>
+
+    <canvas id="canvas" width="400" height="300" class="hidden"></canvas>
+  </div>
+
+  <div id="flash"></div>
+
+<script>
+  let chosenStrip = "";
+  let chosenFilter = "none";
+  let video = document.getElementById("video");
+  let videoPreview = document.getElementById("video-preview");
+  let canvas = document.getElementById("canvas");
+  let finalPhoto = document.getElementById("final-photo");
+  let countdownEl = document.getElementById("countdown");
+
+  let allPhotos = []; 
+  let selectedPhotos = []; 
+  let screenHistory = []; 
+  let currentColor = "black";
+  
+  function showScreen(id) {
+    document.querySelectorAll(".card > div").forEach(div => div.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+    if (screenHistory[screenHistory.length - 1] !== id) {
+      screenHistory.push(id);
+    }
+  }
+
+  function goToStrip() { showScreen("strip-screen"); }
+
+  function chooseStyle(style) {
+    chosenStrip = style;
+    showScreen("filter-screen");
+    startCamera(video);
+    startCamera(videoPreview);
+  }
+
+  function chooseColor(color) {
+    currentColor = color;
+    document.getElementById("strip-double").src = "DoubleStrip_" + color + ".jpg";
+    document.getElementById("strip-single").src = "SingleStrip_" + color + ".jpg";
+  }
+
+  function setFilter(filter) {
+    chosenFilter = filter;
+    video.style.filter = filter;
+    videoPreview.style.filter = filter;
+  }
+
+  function startCamera(videoElement) {
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      videoElement.srcObject = stream;
+    });
+  }
+
+  // --- Updated countdown / photo selection logic ---
+  function startCountdown() {
+    showScreen("countdown-screen");
+    let shots = 7; // always take 7 photos
+    allPhotos = [];
+    selectedPhotos = [];
+    takeMultiplePhotos(shots);
+  }
+
+  function takeMultiplePhotos(shots) {
+    if (shots === 0) {
+      showSelectionScreen();
+      return;
+    }
+
+    let count = 5;
+    countdownEl.textContent = count;
+
+    let interval = setInterval(() => {
+      count--;
+      countdownEl.textContent = count;
+      if (count === 0) {
+        clearInterval(interval);
+        capturePhoto();
+        takeMultiplePhotos(shots - 1);
+      }
+    }, 1000);
+  }
+
+  function capturePhoto() {
+    let ctx = canvas.getContext("2d");
+    ctx.filter = chosenFilter;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    allPhotos.push(canvas.toDataURL("image/png"));
+
+    let flash = document.getElementById("flash");
+    flash.style.opacity = "1";
+    setTimeout(() => { flash.style.opacity = "0"; }, 100);
+  }
+
+  function showSelectionScreen() {
+    showScreen("selection-screen");
+    let container = document.getElementById("photo-selection");
+    container.innerHTML = "";
+
+    let maxPhotos = chosenStrip === "double" ? 4 : 2; // max selectable photos
+
+    allPhotos.forEach((src) => {
+      let img = document.createElement("img");
+      img.src = src;
+      img.onclick = () => toggleSelect(img, src, maxPhotos);
+      container.appendChild(img);
+    });
+  }
+
+  function toggleSelect(img, src, maxPhotos) {
+    if (selectedPhotos.includes(src)) {
+      selectedPhotos = selectedPhotos.filter(p => p !== src);
+      img.style.border = "2px solid #ccc";
+    } else if (selectedPhotos.length < maxPhotos) {
+      selectedPhotos.push(src);
+      img.style.border = "3px solid #007bff";
+    }
+
+    if (selectedPhotos.length === maxPhotos) {
+      buildStrip();
+    }
+  }
+
+  function buildStrip() {
+  let stripCanvas = document.createElement("canvas");
+  let ctx = stripCanvas.getContext("2d");
+
+  if (chosenStrip === "double") {
+    stripCanvas.width = 800;   // total width
+    stripCanvas.height = 1200; // 4 rows × 300px
+    let photosToUse = allPhotos.slice(0, 4); // pick first 4 photos
+    photosToUse.forEach((src, i) => {
+      let img = new Image();
+      img.src = src;
+      img.onload = () => {
+        let rowHeight = 300;
+        let colWidth = stripCanvas.width / 2;
+        let aspect = img.width / img.height;
+        let drawWidth = Math.min(colWidth, rowHeight * aspect);
+        let xOffset = (colWidth - drawWidth) / 2;
+
+        ctx.drawImage(img, xOffset, i * rowHeight, drawWidth, rowHeight);
+        ctx.drawImage(img, colWidth + xOffset, i * rowHeight, drawWidth, rowHeight);
+
+        if (i === photosToUse.length - 1) {
+          finalPhoto.src = stripCanvas.toDataURL("image/png");
+          showScreen("share-screen");
+        }
+      };
+    });
+  } else { // single strip
+    stripCanvas.width = 590;
+    stripCanvas.height = 600; // 2 rows × 300px
+    let photosToUse = allPhotos.slice(0, 2); // pick first 2 photos
+    photosToUse.forEach((src, i) => {
+      let img = new Image();
+      img.src = src;
+      img.onload = () => {
+        let rowHeight = 300;
+        let colWidth = stripCanvas.width / 2;
+        let aspect = img.width / img.height;
+        let drawWidth = Math.min(colWidth, rowHeight * aspect);
+        let xOffset = (colWidth - drawWidth) / 2;
+
+        ctx.drawImage(img, xOffset, i * rowHeight, drawWidth, rowHeight);
+        ctx.drawImage(img, colWidth + xOffset, i * rowHeight, drawWidth, rowHeight);
+
+        if (i === photosToUse.length - 1) {
+          finalPhoto.src = stripCanvas.toDataURL("image/png");
+          showScreen("share-screen");
+        }
+      };
+    });
+  }
+}
+
+
+  function downloadPhoto() {
+    let link = document.createElement("a");
+    link.href = finalPhoto.src;
+    link.download = "photobooth-strip.png";
+    link.click();
+  }
+
+  function reset() {
+    chosenStrip = "";
+    chosenFilter = "none";
+    allPhotos = [];
+    selectedPhotos = [];
+    finalPhoto.src = "";
+    screenHistory = [];
+    showScreen("start-screen");
+  }
+</script>
+
+</body>
+</html>
